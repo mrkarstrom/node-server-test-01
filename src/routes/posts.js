@@ -19,6 +19,29 @@ let posts = [
     },
 ]
 
+router.get("/", (req, res) => {
+    const links = posts.map((post) => 
+        `<a href="/api/posts/${post.id}">${post.title}</a>`
+    );
+    res
+      .status(200)
+      .
+}); 
+
+router.get("/titles", (req, res) => {
+    const links = posts.map((post) => 
+        `<a href="/api/posts/${post.id}">${post.title}</a>`
+    );
+    res
+      .status(200)
+      .send(`
+        <h1>Posts</h1>
+        <ul>${links.map((link) => `<li>${link}</li>`).join('')}</ul>
+        <p>Click on a post to view</p>
+        `);
+}); 
+
+
 
 router.get("/:id", (req, res) => {
   const id = parseInt(req.params.id);
