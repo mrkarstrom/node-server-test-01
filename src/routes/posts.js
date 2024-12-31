@@ -20,12 +20,18 @@ let posts = [
 ]
 
 router.get("/", (req, res) => {
-    const links = posts.map((post) => 
-        `<a href="/api/posts/${post.id}">${post.title}</a>`
-    );
-    res
-      .status(200)
-      .
+    const limit = parseInt(req.query.limit) || 2;
+    if(!isNaN(limit) && limit > 0) {
+        const limitedPosts = posts.slice(0, limit);
+        const links = limitedPosts.map((post) => 
+            `<a href="/api/posts/${post.id}">${post.title}</a>`
+        );
+
+    return res.status(200).send(`<h1>Posts</h1>
+                <ul>${links.map((link) => `<li>${link}</li>`).join('')}</ul>
+                <p>Click on a post to view</p>`);
+    }
+    res.status(200).json(posts);
 }); 
 
 router.get("/titles", (req, res) => {
@@ -49,8 +55,11 @@ router.get("/:id", (req, res) => {
   if(!post) {
     return res.status(404).json({ error: "Post not found" });
   }
-  res.status(200).json(posts.filter((post) => post.id === id));
-
+  res.status(200).send(`
+    <h1>${post.title}</h1>
+    <p>${post.content}</p>
+    <a href="/api/posts">Back</a>
+    `);
 });
 
 export default router;
