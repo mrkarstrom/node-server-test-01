@@ -1,7 +1,7 @@
-import e from 'express';
+import express from 'express';
 import logger from '../middleware/logger.js';
 
-const router = e.Router();
+const router = express.Router();
 let posts = [
   {
     id: 1,
@@ -20,75 +20,96 @@ let posts = [
   },
 ];
 
+// Get all posts with optional limits and offset
 router.get('/', logger, (req, res) => {
-  const limit = parseInt(req.query.limit) || 10;
-  if (!isNaN(limit) && limit > 0) {
-    const limitedPosts = posts.slice(0, limit);
-    const links = limitedPosts.map(
-      (post) => `<a href="/api/posts/${post.id}">${post.title}</a>`
-    );
+  const limit = parseInt(req.query.limit, 10) || posts.length;
+  const offset = parseInt(req.query.offset, 10) || 0;
 
-    return res.status(200).send(`<h1>Posts</h1>
-                <ul>${links.map((link) => `<li>${link}</li>`).join('')}</ul>
-                <p>Click on a post to view</p>`);
+  if (isNaN(limit) || limit <= 0) {
+    return res.status(400).json({ error: 'Invalid limit parameter.' });
   }
-  res.status(200).json(posts);
+  if (isNaN(limit) || limit <= 0) {
+    return res.status(400).json({ error: 'Invalid offset parameter.' });
+  }
+
+  const paginatedPosts = posts.slice(offset, offset + limit);
+  res.status(200).json({
+    data: paginatedPosts,
+    total: posts.length,
+    limit,
+    offset,
+  });
 });
 
-router.get('/titles', logger, (req, res) => {
-  const links = posts.map(
-    (post) => `<a href="/api/posts/${post.id}">${post.title}</a>`
-  );
-  res.status(200).send(`
-        <h1>Posts</h1>
-        <ul>${links.map((link) => `<li>${link}</li>`).join('')}</ul>
-        <p>Click on a post to view</p>
-        `);
-});
-
-router.get('/:id',logger, (req, res) => {
+// Get a single post by ID
+router.get('/:id', logger, (req, res) => {
   const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid post ID.' });
+  }
+
   const post = posts.find((post) => post.id === id);
   if (!post) {
     return res.status(404).json({ error: 'Post not found' });
   }
-  res.status(200).send(`
-    <h1>${post.title}</h1>
-    <p>${post.content}</p>
-    <a href="/api/posts">Back</a>
-    `);
+
+  res.status(200).json(post);
 });
 
-router.post('/', logger, (req,res) => {
-    const {title, content} = req.body;
-    if(!title || !content) {
-        return res.status(400).send(`<p>You need to include both title and content!</p>`);
-    }
-    const id = posts.length + 1;
-    const newPost = { id, title, content };
+// Create a new post
+router.post('/', logger, (req, res) => {
+  const { title, content } = req.body;
 
-    posts.push(newPost);
-    res.status(201).json(newPost);
-})
+  if (!title || !content) {
+    res.status(400).json({ error: 'You need to enter both title and content' });
+  }
 
+  const id = posts.length + 1;
+  const newPost = { id, title, content };
+  posts.push(newPost);
 
-// router.put('/:id', logger, ())
+  res.status(201).json(newPost);
+});
 
+// Update an existing post
+router.put('/:id', logger, (req, res) => {
+  const id = parseInt(req.params.id, 10);
 
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invlid post ID' });
+  }
 
+  const postIndex = posts.findIndex((post) => post.id === id);
+  if (postIndex === -1) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
 
+  const { title, content } = req.body;
+  if (!title && !content) {
+    return res
+      .status(400)
+      .json({ error: 'You need to enter title or content' });
+  }
 
+  posts[postIndex] = { ...posts[postIndex], title, content };
+  res.status(200).json(posts[postIndex]);
+});
 
-// router.post("/", (req, res) => {
-//     const { title, content } = req.body;
-//     if(!title || !content) {
-//         return res.status(400).json({ error: "Title and content are required" });
-//     }
-//     const id = posts.length + 1;
-//     const post = { id, title, content };
-//     posts.push(post);
-//     res.status(201).json(post);
-// }
-// );
+// Delete a post
+router.delete('/', logger, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'Invalid post ID' });
+  }
+
+  const postIndex = posts.findIndex((post) => post.id === id);
+  if (postIndex === -1) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+
+  const deletedPost = posts.splice(postIndex, 1);
+  res.status(200).json({ message: 'Post deleted', data: deletedPost });
+});
 
 export default router;
