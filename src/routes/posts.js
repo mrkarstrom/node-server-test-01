@@ -28,7 +28,7 @@ router.get('/', logger, (req, res) => {
   if (isNaN(limit) || limit <= 0) {
     return res.status(400).json({ error: 'Invalid limit parameter.' });
   }
-  if (isNaN(limit) || limit <= 0) {
+  if (isNaN(offset) || offset <= 0) {
     return res.status(400).json({ error: 'Invalid offset parameter.' });
   }
 
@@ -42,7 +42,7 @@ router.get('/', logger, (req, res) => {
 });
 
 // Get a single post by ID
-router.get('/:id', logger, (req, res) => {
+router.get('/:id', logger, (req, res, next) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid post ID.' });
@@ -50,7 +50,8 @@ router.get('/:id', logger, (req, res) => {
 
   const post = posts.find((post) => post.id === id);
   if (!post) {
-    return res.status(404).json({ error: 'Post not found' });
+    const error = new Error(`A post with the id of: ${id} was not found!`);
+    return next(error);
   }
 
   res.status(200).json(post);
@@ -96,7 +97,7 @@ router.put('/:id', logger, (req, res) => {
 });
 
 // Delete a post
-router.delete('/', logger, (req, res) => {
+router.delete('/:id', logger, (req, res) => {
   const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
