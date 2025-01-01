@@ -51,6 +51,7 @@ router.get('/:id', logger, (req, res, next) => {
   const post = posts.find((post) => post.id === id);
   if (!post) {
     const error = new Error(`A post with the id of: ${id} was not found!`);
+    error.status = 404;
     return next(error);
   }
 
@@ -58,11 +59,13 @@ router.get('/:id', logger, (req, res, next) => {
 });
 
 // Create a new post
-router.post('/', logger, (req, res) => {
+router.post('/', logger, (req, res, next) => {
   const { title, content } = req.body;
 
-  if (!title || !content) {
-    res.status(400).json({ error: 'You need to enter both title and content' });
+  if (!title && !content) {
+    const error = new Error('You need to enter at least title or content.');
+    error.status = 400;
+    return next(error);
   }
 
   const id = posts.length + 1;
@@ -73,23 +76,27 @@ router.post('/', logger, (req, res) => {
 });
 
 // Update an existing post
-router.put('/:id', logger, (req, res) => {
+router.put('/:id', logger, (req, res, next) => {
   const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invlid post ID' });
+    const error = new Error('Invlid post ID.');
+    error.status = 400;
+    return next(error);
   }
 
   const postIndex = posts.findIndex((post) => post.id === id);
   if (postIndex === -1) {
-    return res.status(404).json({ error: 'Post not found' });
+    const error = new Error('Post not found.');
+    error.status = 404;
+    return next(error);
   }
 
   const { title, content } = req.body;
   if (!title && !content) {
-    return res
-      .status(400)
-      .json({ error: 'You need to enter title or content' });
+    const error = new Error('You need to enter title or content.');
+    error.status = 400;
+    return next(error);
   }
 
   posts[postIndex] = { ...posts[postIndex], title, content };
@@ -101,12 +108,16 @@ router.delete('/:id', logger, (req, res) => {
   const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
-    return res.status(400).json({ error: 'Invalid post ID' });
+    const error = new Error('Invalid post ID.');
+    error.status = 400;
+    return next(error);
   }
 
   const postIndex = posts.findIndex((post) => post.id === id);
   if (postIndex === -1) {
-    return res.status(404).json({ error: 'Post not found' });
+    const error = new Error('Post not found.');
+    error.status = 404;
+    return next(error);
   }
 
   const deletedPost = posts.splice(postIndex, 1);
