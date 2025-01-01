@@ -28,7 +28,7 @@ router.get('/', logger, (req, res) => {
   if (isNaN(limit) || limit <= 0) {
     return res.status(400).json({ error: 'Invalid limit parameter.' });
   }
-  if (isNaN(offset) || offset <= 0) {
+  if (isNaN(offset) || offset < 0) {
     return res.status(400).json({ error: 'Invalid offset parameter.' });
   }
 

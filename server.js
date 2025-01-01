@@ -2,6 +2,7 @@ import e from 'express';
 import router from './src/routes/posts.js';
 import logger from './src/middleware/logger.js';
 import errorHandler from './src/middleware/errorHandler.js';
+import notFound from './src/middleware/notFound.js';
 const app = e();
 const port = 3000 || process.env.PORT;
 
@@ -15,6 +16,9 @@ app.get('/', (req, res) => {
 app.use('/api/posts', router);
 
 app.use(logger);
+
+// The catch-all for pages not found!
+app.use(notFound);
 
 app.use(errorHandler);
 
