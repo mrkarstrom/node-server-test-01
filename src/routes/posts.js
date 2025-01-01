@@ -80,7 +80,7 @@ router.put('/:id', logger, (req, res, next) => {
   const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
-    const error = new Error('Invlid post ID.');
+    const error = new Error('Invalid post ID.');
     error.status = 400;
     return next(error);
   }
@@ -104,7 +104,7 @@ router.put('/:id', logger, (req, res, next) => {
 });
 
 // Delete a post
-router.delete('/:id', logger, (req, res) => {
+router.delete('/:id', logger, (req, res, next) => {
   const id = parseInt(req.params.id, 10);
 
   if (isNaN(id)) {
