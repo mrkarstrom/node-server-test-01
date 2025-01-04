@@ -32,12 +32,14 @@ export const getPost = (req, res) => {
   }
 
   const paginatedPosts = posts.slice(offset, offset + limit);
-  res.status(200).json({
-    data: paginatedPosts,
-    total: posts.length,
-    limit,
-    offset,
-  });
+  res.status(200).json(paginatedPosts);
+
+  //   res.status(200).json({
+  //     data: paginatedPosts,
+  //     total: posts.length,
+  //     limit,
+  //     offset,
+  //   });
 };
 
 /**
